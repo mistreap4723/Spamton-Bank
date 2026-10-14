@@ -1,0 +1,74 @@
+import discord
+from discord.ext import commands
+import random
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='$', intents=intents)
+#ikisinide kullandım
+
+balance = 0.0
+
+@bot.event
+async def on_ready():
+    print(f'{bot.user} olarak giriş yaptık')
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if not message.content.startswith('$'):
+        await message.channel.send("Welcome to Spamton Bank! Use $_commands to see what you can do")
+    await bot.process_commands(message)
+
+@bot.command()
+async def _commands(ctx):
+    await ctx.send("""$Show_Balance\n$Add_Dollar [value]\n$Add_Cent [value]\n$Withdraw [value]\n$Gamble [value]\n$Reset\nNote: If you dont specify a value, it'll operate with 10 by default""")
+
+@bot.command()
+async def Show_Balance(ctx):
+    await ctx.send(f"Your current balance is {balance} dollars")
+
+@bot.command()
+async def Add_Dollar(ctx, value: float = 10):
+    global balance
+    balance += value
+    await ctx.send(f"Added {value} dollars. Current balance: {balance} dollars")
+
+@bot.command()
+async def Add_Cent(ctx, value: float = 10):
+    global balance
+    balance += value / 100
+    await ctx.send(f"Added {value} cents. Current balance: {balance} dollars")
+
+@bot.command()
+async def Withdraw(ctx, value: float = 10):
+    global balance
+    if balance >= value:
+        balance -= value
+        await ctx.send(f"Withdrew {value} dollars. Current balance: {balance} dollars")
+    else:
+        await ctx.send("UR TOO POOR FOR THIS RN U TRYING TO STEAL FROM ME?")
+
+@bot.command()
+async def Reset(ctx):
+    global balance
+    balance = 0
+    await ctx.send("You don't have a single penny now")
+
+@bot.command()
+async def Gamble(ctx, value: float = 10):
+    global balance
+    if balance >= value:
+        outcome = random.choice(["win", "lose"])
+        if outcome == "win":
+            balance += value
+            await ctx.send(f"YOU WON! Your current balance is {balance} dollars")
+        else:
+            balance -= value
+            await ctx.send(f"Loser... Your current balance is {balance} dollars")
+    else:
+        await ctx.send("UR TOO POOR FOR THIS RN U TRYING TO STEAL FROM ME?")
+
+bot.run("WE DONT TALK ABOUT TV STUFF HERE")
